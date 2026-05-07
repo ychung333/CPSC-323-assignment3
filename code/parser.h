@@ -83,7 +83,7 @@ private:
     void OptParameterList();
     void ParameterList();
     void Parameter();
-    string Qualifier();
+    void Qualifier();
     void Body();
     void OptDeclarationList();
     void DeclarationList();

@@ -4,7 +4,8 @@
 // Constructor Functions
 // =======================
 Parser::Parser(Lexer& lex, ofstream& outFile, bool print)
-    : lexer(lex), fout(outFile), printRules(print)
+    : lexer(lex), fout(outFile), printRules(print),
+    memoryAddress(10000), instructionAddress(1)
 {
     currentToken = lexer.nextToken();
 
@@ -225,8 +226,18 @@ void Parser::DeclarationList()
 void Parser::Declaration()
 {
     printProduction("<Declaration> -> <Qualifier> <IDs> ;");
+    string type = currentToken.lexeme;
     Qualifier();
-    IDs();
+
+    insertSymbol(currentToken.lexeme, type);
+    matchType("identifier");
+
+    while (currentToken.lexeme == ",")
+    {
+        match(",");
+        insertSymbol(currentToken.lexeme, type);
+        matchType("identifier");
+    }
     match(";");
 }
 
@@ -547,4 +558,52 @@ void Parser::PrimaryPrime()
 void Parser::Empty()
 {
     printProduction("<Empty> -> ε");
+}
+
+bool Parser::symbolExists(const string& id)
+{
+    for (const Symbol& s : symbolTable)
+    {
+        if (s.identifier == id)
+            return true;
+    }
+    return false;
+}
+
+void Parser::insertSymbol(const string& id, const string& type)
+{
+    if (symbolExists(id))
+    {
+        fout << "Semantic Error: Identifier '" << id << "' already declared." << endl;
+        return;
+    }
+    Symbol sym;
+    sym.identifier = id;
+    sym.memoryLocation = memoryAddress++;
+    sym.type = type;
+    symbolTable.push_back(sym);
+}
+
+int Parser::getAddress(const string& id)
+{
+    for (const Symbol& s : symbolTable)
+    {
+        if (s.identifier == id)
+            return s.memoryLocation;
+    } 
+    fout << "Semantic Error: Identifier '" << id << "'used but not declared." << endl;
+    return -1;
+}
+
+void Parser::printSymbolTable()
+{
+    fout << "\n=== Symbol Table ===" << endl;
+    fout << "Identifier\t\tMemoryLocation\t\tType" << endl;
+    fout << "-------------------------------------------" << endl;
+    for (const Symbol& s : symbolTable)
+    {
+        fout << s.identifier << "\t\t\t"
+             << s.memoryLocation << "\t\t\t"
+             << s.type << endl;
+    }
 }

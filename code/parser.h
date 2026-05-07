@@ -61,9 +61,9 @@ private:
     // Symbol Table Functions
     // =======================
     bool symbolExists(const string& id);
-    int getAddress(const string& id);
-    // string getType(const string& id);
     void insertSymbol(const string& id, const string& type);
+    int getAddress(const string& id);
+    string getType(const string& id);
     void printSymbolTable();
 
     // =======================
@@ -77,40 +77,38 @@ private:
     // Grammar Functions
     // =======================
     void Rat26S();
+
+    // Simplified Assignment 3:
+    // No function definitions are allowed.
     void OptFunctionDefinitions();
-    void FunctionDefinitions();
-    void Function();
-    void OptParameterList();
-    void ParameterList();
-    void Parameter();
-    void Qualifier();
-    void Body();
+
     void OptDeclarationList();
     void DeclarationList();
     void Declaration();
     void IDs();
-    // void IDsDeclaration(const string& type);
-    // vector<string> IDsList();
+    void IDsDeclaration(const string& type);
+    vector<string> IDsList();
 
     void StatementList();
     void Statement();
     void Compound();
     void Assign();
     void If();
-    void IfPrime();
+    void IfPrime(int falseJump);
     void Return();
     void Print();
     void Scan();
     void While();
     void Condition();
     void Relop();
-    void Expression();
-    void ExpressionPrime();
-    void Term();
-    void TermPrime();
-    void Factor();
-    void Primary();
-    void PrimaryPrime();
+
+    string Expression();
+    string ExpressionPrime(string inheritedType);
+    string Term();
+    string TermPrime(string inheritedType);
+    string Factor();
+    string Primary();
+
     void Empty();
 
 public:

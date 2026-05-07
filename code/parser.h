@@ -62,7 +62,7 @@ private:
     // =======================
     bool symbolExists(const string& id);
     int getAddress(const string& id);
-    string getType(const string& id);
+    // string getType(const string& id);
     void insertSymbol(const string& id, const string& type);
     void printSymbolTable();
 
@@ -89,8 +89,8 @@ private:
     void DeclarationList();
     void Declaration();
     void IDs();
-    void IDsDeclaration(const string& type);
-    vector<string> IDsList();
+    // void IDsDeclaration(const string& type);
+    // vector<string> IDsList();
 
     void StatementList();
     void Statement();
@@ -103,7 +103,7 @@ private:
     void Scan();
     void While();
     void Condition();
-    string Relop();
+    void Relop();
     void Expression();
     void ExpressionPrime();
     void Term();

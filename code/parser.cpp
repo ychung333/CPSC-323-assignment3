@@ -79,6 +79,8 @@ void Parser::printProduction(const string& rule)
 void Parser::parse()
 {
     Rat26S();
+    printInstructionTable();
+    printSymbolTable();
 }
 
 void Parser::Rat26S()
@@ -605,5 +607,38 @@ void Parser::printSymbolTable()
         fout << s.identifier << "\t\t\t"
              << s.memoryLocation << "\t\t\t"
              << s.type << endl;
+    }
+}
+
+void Parser::generateInstruction(const string& op, const string& operand)
+{
+    Instruction instr;
+    instr.address = instructionAddress++;
+    instr.op = op;
+    instr.operand = operand;
+    instructionTable.push_back(instr);
+}
+
+void Parser::backPatch(int instructionIndex, int targetAddress)
+{
+    for (Instruction& instr : instructionTable)
+    {
+        if (instr.address == instructionIndex)
+        {
+            instr.operand = to_string(targetAddress);
+            return;
+        }
+    }
+}
+
+void Parser::printInstructionTable()
+{
+    fout << "\n=== Assembly Code ===" << endl;
+    for (const Instruction& instr : instructionTable)
+    {
+        fout << instr.address << "\t" << instr.op;
+        if (!instr.operand.empty())
+            fout << "\t" << instr.operand;
+        fout << endl;
     }
 }

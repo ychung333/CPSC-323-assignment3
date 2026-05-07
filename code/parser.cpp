@@ -316,9 +316,17 @@ void Parser::Compound()
 void Parser::Assign()
 {
     printProduction("<Assign> -> <Identifier> = <Expression> ;");
+
+    string id = currentToken.lexeme;
+    int addr = getAddress(id);
+
     matchType("identifier");
     match("=");
+
     Expression();
+
+    generateInstruction("POPM", to_string(addr));
+
     match(";");
 }
 
@@ -391,11 +399,60 @@ void Parser::Scan()
 void Parser::While()
 {
     printProduction("<While> -> while ( <Condition> ) <Statement>");
+
     match("while");
+
+    int loopStart = instructionAddress;
+    generateInstruction("LABEL");
+
     match("(");
-    Condition();
+
+    Expression();
+
+    string relop = currentToken.lexeme;
+    Relop();
+
+    Expression();
+
+    if (relop == "<")
+    {
+        generateInstruction("LES");
+    }
+    else if (relop == ">")
+    {
+        generateInstruction("GRT");
+    }
+    else if (relop == "==")
+    {
+        generateInstruction("EQU");
+    }
+    else if (relop == "!=")
+    {
+        generateInstruction("NEQ");
+    }
+    else if (relop == ">=")
+    {
+        generateInstruction("GEQ");
+    }
+    else if (relop == "<=")
+    {
+        generateInstruction("LEQ");
+    }
+    else
+    {
+        error("Invalid relational operator in while condition");
+    }
+
+    int falseJump = instructionAddress;
+    generateInstruction("JMPZ", "");
+
     match(")");
+
     Statement();
+
+    generateInstruction("JMP", to_string(loopStart));
+
+    backPatch(falseJump, instructionAddress);
 }
 
 void Parser::Condition()
@@ -439,6 +496,9 @@ void Parser::ExpressionPrime()
         printProduction("<Expression Prime> -> + <Term> <Expression Prime>");
         match("+");
         Term();
+
+        generateInstruction("A");
+
         ExpressionPrime();
     }
     else if (currentToken.lexeme == "-")
@@ -446,6 +506,9 @@ void Parser::ExpressionPrime()
         printProduction("<Expression Prime> -> - <Term> <Expression Prime>");
         match("-");
         Term();
+
+        generateInstruction("S");
+
         ExpressionPrime();
     }
     else
@@ -469,6 +532,9 @@ void Parser::TermPrime()
         printProduction("<Term Prime> -> * <Factor> <Term Prime>");
         match("*");
         Factor();
+
+        generateInstruction("M");
+
         TermPrime();
     }
     else if (currentToken.lexeme == "/")
@@ -476,6 +542,9 @@ void Parser::TermPrime()
         printProduction("<Term Prime> -> / <Factor> <Term Prime>");
         match("/");
         Factor();
+
+        generateInstruction("D");
+
         TermPrime();
     }
     else
@@ -504,13 +573,23 @@ void Parser::Primary()
 {
     if (currentToken.type == "identifier")
     {
-        printProduction("<Primary> -> <Identifier> <Primary Prime>");
+        printProduction("<Primary> -> <Identifier>");
+
+        string id = currentToken.lexeme;
+        int addr = getAddress(id);
+
+        generateInstruction("PUSHM", to_string(addr));
+
         matchType("identifier");
-        PrimaryPrime();
     }
     else if (currentToken.type == "integer")
     {
         printProduction("<Primary> -> <Integer>");
+
+        string value = currentToken.lexeme;
+
+        generateInstruction("PUSHI", value);
+
         matchType("integer");
     }
     else if (currentToken.lexeme == "(")
@@ -522,22 +601,28 @@ void Parser::Primary()
     }
     else if (currentToken.type == "real")
     {
-        printProduction("<Primary> -> <Real>");
+        error("Real numbers are not allowed in Assignment 3 simplified Rat26S");
         matchType("real");
     }
     else if (currentToken.lexeme == "true")
     {
         printProduction("<Primary> -> true");
+
+        generateInstruction("PUSHI", "1");
+
         match("true");
     }
     else if (currentToken.lexeme == "false")
     {
         printProduction("<Primary> -> false");
+
+        generateInstruction("PUSHI", "0");
+
         match("false");
     }
     else
     {
-        error("Expected primary (identifier, integer, real, true, false, or parenthesized expression)");
+        error("Expected primary");
     }
 }
 
@@ -592,8 +677,9 @@ int Parser::getAddress(const string& id)
     {
         if (s.identifier == id)
             return s.memoryLocation;
-    } 
-    fout << "Semantic Error: Identifier '" << id << "'used but not declared." << endl;
+    }
+
+    fout << "Semantic Error: Identifier '" << id << "' used but not declared." << endl;
     return -1;
 }
 

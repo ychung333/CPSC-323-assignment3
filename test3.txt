@@ -1,0 +1,29 @@
+@
+@
+integer i, max, sum, avg;
+@
+sum = 0;
+i = 1;
+
+read(max);
+
+while(i <= max)
+{
+    sum = sum + i;
+    i = i + 1;
+}
+
+avg = sum / max;
+
+if(avg > 10)
+{
+    write(avg);
+}
+otherwise
+{
+    write(sum);
+}
+fi
+
+write(sum + max);
+@
